@@ -4,6 +4,7 @@ import qrcode
 import boto3
 import os
 from io import BytesIO
+from botocore.exceptions import ClientError
 
 # Loading Environment variable (AWS Access Key and Secret Key)
 from dotenv import load_dotenv
@@ -26,10 +27,10 @@ app.add_middleware(
 # AWS S3 Configuration
 s3 = boto3.client(
     's3',
-    aws_access_key_id= os.getenv("AWS_ACCESS_KEY"),
-    aws_secret_access_key= os.getenv("AWS_SECRET_KEY"))
+    aws_access_key_id= "AKIAWX2IFJLGDBIOWW6R",
+    aws_secret_access_key= "7DwF8ZCWIWC/AcreRTU+2Qo7nPWb465a9rXlpaK+")
 
-bucket_name = 'YOUR_BUCKET_NAME' # Add your bucket name here
+bucket_name = 'new-project-docker' # Add your bucket name here
 
 @app.post("/generate-qr/")
 async def generate_qr(url: str):
@@ -55,11 +56,20 @@ async def generate_qr(url: str):
 
     try:
         # Upload to S3
-        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png', ACL='public-read')
+        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png')
         
         # Generate the S3 URL
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
         return {"qr_code_url": s3_url}
+    except ClientError as e:
+        error_code = e.response['ResponseMetadata']['HTTPStatusCode']
+        error_message = e.response['Error']['Message']
+        print("AWS ClientError:", e.response)  # 👈 This prints the full error structure to console/log
+        raise HTTPException(status_code=error_code, detail=f"AWS S3 Error: {error_message}")
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print("Unexpected error:", str(e))  # 👈 This logs any other kind of exception
+        raise HTTPException(status_code=500, detail=f"Unexpected Error: {str(e)}")
+
+
     
