@@ -14,7 +14,7 @@ jobs:
           docker build ./front-end-nextjs/ -t isirakatakumbura/devops-qr-code-generator-frontend
       - name: push image to docker Hub
         run: |
-          docker login -u isirakatakumbura -p ${{ secrets.QR_CODE_WEB_APP_TOKEN }}
+          docker login -u isirakatakumbura -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
           docker push isirakatakumbura/devops-qr-code-generator-api:latest
           docker push isirakatakumbura/devops-qr-code-generator-frontend:latest
 
