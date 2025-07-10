@@ -6,7 +6,6 @@ on:
     paths:
       - 'api/Dockerfile'
       - 'front-end-nextjs/Dockerfile'
-
 jobs:
   publish_images:
     runs-on: ubuntu-latest
